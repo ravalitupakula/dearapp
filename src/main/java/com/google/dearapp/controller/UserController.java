@@ -214,6 +214,13 @@ public class UserController {
 	public ResponseStructure<List<MatchingUser>> findAllMatches(@PathVariable(name = "id") Long id, @PathVariable(name = "top") Integer top){
 		return userService.findAllMatches(id, top);
 	}
+	
+	//****************************Send OTP*************************
+	
+	@PatchMapping("/verifyotp/{id}/{otp}")
+	public ResponseStructure<User> verifyOTP(@PathVariable(name = "id") Long id, @PathVariable(name = "otp") int otp){
+		return userService.verifyOTP(id, otp);
+	}
 
 		
 		

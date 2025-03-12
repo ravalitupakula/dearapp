@@ -37,6 +37,7 @@ public class User {
 	private String email;
 	private Long phone;
 	private String password;
+	private int otp;
 	@Enumerated(EnumType.STRING)
 	private UserGender gender = UserGender.FEMALE;
 	private Integer age;
@@ -46,6 +47,7 @@ public class User {
 	private UserStatus status = UserStatus.ACTIVE;
 	@ElementCollection
 	private List<String> interests;
+		
 	
 }
 

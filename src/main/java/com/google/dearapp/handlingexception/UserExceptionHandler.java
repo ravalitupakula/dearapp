@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.google.dearapp.exceptionclasses.DuplicateEmailIdEsception;
 import com.google.dearapp.exceptionclasses.DuplicatePhoneException;
+import com.google.dearapp.exceptionclasses.InvalidOTPException;
 import com.google.dearapp.exceptionclasses.InvalidUserIdException;
 import com.google.dearapp.responsestructure.ResponseStructure;
 
@@ -40,6 +41,17 @@ public class UserExceptionHandler {
 		ResponseStructure<String> structure = new ResponseStructure<>();
 		structure.setStatus(HttpStatus.BAD_REQUEST.value());
 		structure.setMessage("Invalid Id give Valid Id");
+		structure.setBody(e.getMessage());
+		return structure;
+	}
+	
+	//*******************OTP************
+	
+	@ExceptionHandler(InvalidOTPException.class)
+	public ResponseStructure<String> invalidOTPException(InvalidOTPException e){
+		ResponseStructure<String> structure = new ResponseStructure<>();
+		structure.setStatus(HttpStatus.BAD_REQUEST.value());
+		structure.setMessage("Invalid Otp");
 		structure.setBody(e.getMessage());
 		return structure;
 	}

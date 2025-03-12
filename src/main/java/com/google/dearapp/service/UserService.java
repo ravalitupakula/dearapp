@@ -16,8 +16,10 @@ import com.google.dearapp.dto.MatchingUser;
 import com.google.dearapp.entity.User;
 import com.google.dearapp.exceptionclasses.DuplicateEmailIdEsception;
 import com.google.dearapp.exceptionclasses.DuplicatePhoneException;
+import com.google.dearapp.exceptionclasses.InvalidOTPException;
 import com.google.dearapp.exceptionclasses.InvalidUserIdException;
 import com.google.dearapp.responsestructure.ResponseStructure;
+import com.google.dearapp.util.EmailService;
 //import com.google.dearapp.util.SortByAgeDifference;
 import com.google.dearapp.util.SortByAgeDifferenceAsc;
 import com.google.dearapp.util.UserGender;
@@ -29,24 +31,35 @@ public class UserService {
 	
 	@Autowired
 	private UserDao userDao;
+	
+	@Autowired
+	private EmailService emailService;
 
 	//**********************Save User***************************
 	
 	public ResponseStructure<User> saveUser(User u) {
 		
-		Optional<User> optional = userDao.findByEmail(u.getEmail());
-		if(optional.isPresent()) {
-			throw new DuplicateEmailIdEsception("Account Already Exit with Email : "+u.getEmail()+" please try to login otherwise use different email for registration");
-			
-		}
+		u.setStatus(UserStatus.IN_ACTIVE);
 		
-		Optional< User> optional2 = userDao.findByPhone(u.getPhone());
-		if(optional2.isPresent()) {
-			
-			throw new DuplicatePhoneException("Account already exit this phone Number: "+u.getPhone()+" please try to login, otherwise use different Phone Number for Registration");
-		}
+		int otp = emailService.getOTP();
+		u.setOtp(otp);
+		
+//		Optional<User> optional = userDao.findByEmail(u.getEmail());
+//		if(optional.isPresent()) {
+//			throw new DuplicateEmailIdEsception("Account Already Exit with Email : "+u.getEmail()+" please try to login otherwise use different email for registration");
+//			
+//		}
+//		
+//		Optional< User> optional2 = userDao.findByPhone(u.getPhone());
+//		if(optional2.isPresent()) {
+//			
+//			throw new DuplicatePhoneException("Account already exit this phone Number: "+u.getPhone()+" please try to login, otherwise use different Phone Number for Registration");
+//		}
 	
 		u = userDao.saveUser(u);
+		
+		emailService.sendFirstEmail(u);
+		
 		ResponseStructure<User> structure = new ResponseStructure<>();
 		structure.setStatus(HttpStatus.OK.value());
 		structure.setMessage("Save The User");
@@ -456,6 +469,26 @@ public class UserService {
 			c++;
 		}
 		return c;
+	}
+
+	public ResponseStructure<User> verifyOTP(Long id, int otp) {
+		ResponseStructure<User> structure = new ResponseStructure<>();
+		Optional<User> optional = userDao.findUserById(id);
+		if(optional.isEmpty()) {
+			throw new InvalidUserIdException("Invalid User id : " + id + " Unable To Verify OTP : " + otp);
+			
+		}
+		User user = optional.get();
+		if(otp != user.getOtp()) {
+			throw new InvalidOTPException("Invalid OTP : " + otp + " Unable To Verify User"); 
+		}
+		
+		user.setStatus(UserStatus.ACTIVE);
+		user = userDao.saveUser(user);
+		structure.setStatus(HttpStatus.OK.value());
+		structure.setMessage("User Found Successfully");
+		structure.setBody(user);
+		return structure;
 	}
 	
 }
